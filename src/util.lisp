@@ -31,8 +31,8 @@
 (defun read-string (stream size)
   (let ((data (make-array size :element-type '(unsigned-byte 8))))
     (read-sequence data stream)
-    (string-right-trim
-     '(#\Nul)
+    (string-trim
+     '(#\Nul #\ZERO_WIDTH_NO-BREAK_SPACE)
      (babel:octets-to-string
       data
       :start 1
@@ -71,8 +71,8 @@
          lang)
        (babel:octets-to-string data :start 4 :end end-of-description
                                     :encoding encoding)
-       (string-right-trim
-        '(#\Nul)
+       (string-trim
+        '(#\Nul #\ZERO_WIDTH_NO-BREAK_SPACE)
         (babel:octets-to-string data :start (+ end-of-description (length delimiter))
                                      :encoding encoding))))))
 
