@@ -5,7 +5,8 @@
         #:id3v2.3
         #:id3v2.4
         #:id3v2.mp3
-        #:id3v2.limit-stream)
+        #:id3v2.limit-stream
+        #:id3v2.util)
   (:export #:mp3
            #:mp3-header
            #:mp3-name
@@ -37,17 +38,38 @@
       (return-from read-mp3-file nil))
 
     (let* ((header (read-id3v2-header in))
-           (mp3 (make-mp3 :header header)))
+           (mp3 (make-mp3 :header header))
+           (has-extended-header
+             (/= 0 (logand (id3v2-header-flags header)
+                           (ash 1 6)))))
       (case (id3v2-header-version header)
-        (2 (parse-id3v22
-            mp3
-            (make-limit-stream in (id3v2-header-size header))))
-        (3 (parse-id3v23
-            mp3
-            (make-limit-stream in (id3v2-header-size header))))
-        (4 (parse-id3v24
-            mp3
-            (make-limit-stream in (id3v2-header-size header))))
+        (2
+         (assert (null has-extended-header))
+         (parse-id3v22
+          mp3
+          (make-limit-stream in (id3v2-header-size header))))
+        (3
+         (when has-extended-header
+           (let ((size
+                   (+ (ash (read-byte in) 21)
+                      (ash (read-byte in) 14)
+                      (ash (read-byte in) 7)
+                      (read-byte in))))
+             (skip-bytes in size)))
+         (parse-id3v23
+          mp3
+          (make-limit-stream in (id3v2-header-size header))))
+        (4
+         (when has-extended-header
+           (let ((size
+                   (+ (ash (read-byte in) 21)
+                      (ash (read-byte in) 14)
+                      (ash (read-byte in) 7)
+                      (read-byte in))))
+             (skip-bytes in (- size 4))))
+         (parse-id3v24
+          mp3
+          (make-limit-stream in (id3v2-header-size header))))
         (otherwise (error "Unrecognized ID3v2 version: ~A" (id3v2-header-version header)))))))
 
 (defun has-id3-tag-p (stream)

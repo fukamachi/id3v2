@@ -22,7 +22,7 @@
                :babel)
   :components ((:module "src"
                 :components
-                ((:file "id3v2" :depends-on ("id3v22" "id3v23" "id3v24" "limit-stream" "mp3"))
+                ((:file "id3v2" :depends-on ("id3v22" "id3v23" "id3v24" "limit-stream" "mp3" "util"))
                  (:file "id3v22" :depends-on ("mp3" "util"))
                  (:file "id3v23" :depends-on ("mp3" "util"))
                  (:file "id3v24" :depends-on ("mp3" "util"))
